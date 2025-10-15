@@ -1,0 +1,1 @@
+export 'package:emovieapp/src/core/constants/colors_palette.dart';

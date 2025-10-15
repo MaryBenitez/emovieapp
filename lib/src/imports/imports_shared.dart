@@ -1,0 +1,1 @@
+export 'package:emovieapp/src/core/shared/custom_app_safe_scaffold.dart';
