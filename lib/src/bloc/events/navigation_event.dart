@@ -12,11 +12,12 @@ class NavigateToPage extends NavigationEvent {
   final String routeName;
   final Map<String, dynamic>? arguments;
   final bool clearStack;
+  final bool useCustomTransition; 
 
-  const NavigateToPage({required this.routeName, this.arguments, this.clearStack = false,});
+  const NavigateToPage({required this.routeName, this.arguments, this.clearStack = false, this.useCustomTransition = false});
 
   @override
-  List<Object?> get props => [routeName, clearStack];
+  List<Object?> get props => [routeName, clearStack, useCustomTransition];
 }
 
 // Cargar el último estado guardado (cuando se inicia la app)

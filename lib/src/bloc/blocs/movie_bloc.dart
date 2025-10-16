@@ -62,5 +62,19 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
         }
       }
     });
+
+    on<LoadMovieDetail>((event, emit) async {
+      emit(MovieLoading());
+      try {
+        final movieDetail = await _movieService.getMoviesDetails(idMovie: event.movieId);
+        if (movieDetail != null) {
+          emit(MovieDetailLoaded(movieDetail: movieDetail));
+        } else {
+          emit(const MovieDetailError(message: 'No se pudo cargar el detalle de la película'));
+        }
+      } catch (e) {
+        emit(MovieDetailError(message: e.toString()));
+      }
+    });
   }
 }

@@ -9,6 +9,7 @@ class MovieService {
   List<MovieModel> listMoviesUpcoming = [];
   List<MovieModel> listMoviesPopular = [];
   List<MovieModel> listMoviesRecommended = [];
+  MovieDetailModel resMovieDetails = MovieDetailModel();
 
   // Proximos estrenos
   Future<List<MovieModel>> getMoviesUpcoming() async {
@@ -123,11 +124,64 @@ class MovieService {
     } catch (e) {
       debugPrint('getTrendingForRecommendations Error :: $e');
       showToastMessage(
-        message: 'Error fetching trending recommendations: $e', 
+        message: 'Error fetching getTrendingForRecommendations: $e', 
         backgroundColor: AppColors.redColor, 
         textColor: AppColors.whiteColor
       );
       return [];
+    }
+  }
+
+  // Detalle de peliculas
+  Future<MovieDetailModel?> getMoviesDetails({required int idMovie}) async {
+    try {
+      final response = await _apiService.get(API.detailsMovie(idMovie));
+      
+      if (response == null) {
+        showToastMessage(
+          message: 'No se recibió respuesta del servidor', 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return null;
+      }
+
+      final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+      
+      // Validar si hay errores en la respuesta
+      if (responseMap.containsKey('success') && responseMap['success'] == false) {
+        final errorMessage = responseMap['status_message'] ?? 'Error desconocido';
+        showToastMessage(
+          message: errorMessage, 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return null;
+      }
+
+      // Validar que tenga los campos mínimos requeridos
+      if (!responseMap.containsKey('id') || responseMap['id'] == null) {
+        showToastMessage(
+          message: 'Respuesta inválida del servidor', 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return null;
+      }
+
+      // Crear el modelo directamente desde el responseMap
+      final movieDetail = MovieDetailModel.fromJson(responseMap);
+      
+      return movieDetail;
+      
+    } catch (e) {
+      debugPrint('getMoviesDetails Error :: $e');
+      showToastMessage(
+        message: 'Error fetching getMoviesDetails: ${e.toString()}', 
+        backgroundColor: AppColors.redColor, 
+        textColor: AppColors.whiteColor
+      );
+      return null;
     }
   }
 

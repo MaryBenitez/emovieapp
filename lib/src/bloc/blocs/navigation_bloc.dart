@@ -17,7 +17,12 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
         navigationHistory.clear();
       }
       navigationHistory.add(event.routeName);
-      emit(NavigationSuccess(routeName: event.routeName, arguments: event.arguments));
+      
+      emit(NavigationSuccess(
+        routeName: event.routeName, 
+        arguments: event.arguments,
+        useCustomTransition: event.useCustomTransition,
+      ));
     });
 
     // Manejar el evento de retroceso

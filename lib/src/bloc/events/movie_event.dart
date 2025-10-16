@@ -31,3 +31,12 @@ class UpdatePeriodFilter extends FilterEvent {
   @override
   List<Object> get props => [period];
 }
+
+class LoadMovieDetail extends MovieEvent {
+  final int movieId;
+
+  const LoadMovieDetail({required this.movieId});
+
+  @override
+  List<Object> get props => [movieId];
+}

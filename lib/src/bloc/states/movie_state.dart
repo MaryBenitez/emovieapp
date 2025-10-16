@@ -65,3 +65,21 @@ class MovieError extends MovieState {
   @override
   List<Object> get props => [message];
 }
+
+class MovieDetailLoaded extends MovieState {
+  final MovieDetailModel movieDetail;
+
+  const MovieDetailLoaded({required this.movieDetail});
+
+  @override
+  List<Object> get props => [movieDetail];
+}
+
+class MovieDetailError extends MovieState {
+  final String message;
+
+  const MovieDetailError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}

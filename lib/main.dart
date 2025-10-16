@@ -120,10 +120,59 @@ class _MyAppViewState extends State<MyAppView> with WidgetsBindingObserver {
                     locale: languageState.locale,
                     supportedLocales: context.supportedLocales,
                     localizationsDelegates: context.localizationDelegates,
-                    home: BlocBuilder<NavigationBloc, NavigationState>(
-                      builder: (context, navState) {
-                        return _buildPage(navState);
+                    home: BlocListener<NavigationBloc, NavigationState>(
+                      listener: (context, state) {
+                        if (state is NavigationSuccess && state.useCustomTransition) {
+                          // Para movie detail, usar animación personalizada
+                          final MovieModel? movie = state.arguments?['movie'];
+                          final String? heroTag = state.arguments?['heroTag'];
+                          
+                          if (movie != null && heroTag != null) {
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, secondaryAnimation) {
+                                  return MovieDetailScreen(movie: movie, heroTag: heroTag);
+                                },
+                                transitionDuration: const Duration(milliseconds: 600),
+                                reverseTransitionDuration: const Duration(milliseconds: 400),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  var scaleAnimation = Tween<double>(
+                                    begin: 0.8,
+                                    end: 1.0,
+                                  ).animate(CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ));
+                                  
+                                  var fadeAnimation = Tween<double>(
+                                    begin: 0.0,
+                                    end: 1.0,
+                                  ).animate(CurvedAnimation(
+                                    parent: animation,
+                                    curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+                                  ));
+
+                                  return FadeTransition(
+                                    opacity: fadeAnimation,
+                                    child: ScaleTransition(
+                                      scale: scaleAnimation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        }
                       },
+                      child: BlocBuilder<NavigationBloc, NavigationState>(
+                        builder: (context, navState) {
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _buildPage(navState)
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),

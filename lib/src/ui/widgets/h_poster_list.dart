@@ -4,118 +4,76 @@ import 'package:emovieapp/src/imports/imports.dart';
 typedef PosterTap<T> = void Function(T item);
 
 class HPooterList<T> extends StatelessWidget {
+  final List<T> items;
+  final double posterHeight;
+  final String section; // AGREGAR ESTO
+  final Function(T)? onTap;
+
   const HPooterList({
     super.key,
     required this.items,
-    required this.onTap,
     required this.posterHeight,
+    required this.section, // AGREGAR ESTO
+    this.onTap,
   });
-
-  final List<T> items;
-  final PosterTap<T> onTap;
-  final double posterHeight;
 
   @override
   Widget build(BuildContext context) {
-    final shortest = MediaQuery.sizeOf(context).shortestSide;
-    final radius = BorderRadius.circular((12 * (shortest / 400)).clamp(10, 16).toDouble());
+    if (items.isEmpty) {
+      return SizedBox(
+        height: posterHeight,
+        child: Center(
+          child: Text(
+            'No hay películas disponibles',
+            style: TextStyle(color: AppColors.whiteColor),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
-      height: posterHeight + 16, // altura + padding inferior
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: posterHeight,
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final item = items[index];
-          
-          // Adaptar para MovieModel y MockMovie
-          String imageUrl;
-          String title;
-          
-          if (item is MovieModel) {
-            // Usar el helper API.poster() en lugar de construir URL manualmente
-            imageUrl = item.posterPath != null 
-                ? API.poster(item.posterPath!, size: 'w342')
-                : '';
-            title = item.title ?? 'Sin título';
-          } else {
-            // Para MockMovie (fallback)
-            imageUrl = (item as dynamic).imageUrl as String;
-            title = (item as dynamic).title as String;
-          }
-
-          return GestureDetector(
-            onTap: () => onTap(item),
-            child: ClipRRect(
-              borderRadius: radius,
-              child: AspectRatio(
-                aspectRatio: 2 / 3, // póster clásico 1:1.5
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Imagen
-                    imageUrl.isNotEmpty
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (c, w, p) {
-                              if (p == null) return w;
-                              return Container(
-                                color: AppColors.primaryColor,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.redColor,
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              );
-                            },
-                            errorBuilder: (_, __, ___) => _buildErrorPlaceholder(),
-                          )
-                        : _buildErrorPlaceholder(),
-                    // Sombra sutil inferior para legibilidad
-                    const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment(0, 0.6),
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black54],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          return _buildPosterItem(item, posterHeight, section); // PASAR SECTION
         },
       ),
     );
   }
 
-  Widget _buildErrorPlaceholder() {
-    return Container(
-      color: AppColors.secondColor.withOpacity(0.2),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.movie,
-            color: AppColors.whiteColor.withOpacity(0.5),
-            size: 32,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Sin imagen',
-            style: TextStyle(
-              color: AppColors.whiteColor.withOpacity(0.5),
-              fontSize: 10,
+  Widget _buildPosterItem(T item, double posterHeight, String section) {
+    return GestureDetector(
+      onTap: () => onTap?.call(item),
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        child: Hero(
+          tag: 'movie_${(item as dynamic).id}_$section',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              ImageHelper.poster((item as dynamic).posterPath ?? ''),
+              width: posterHeight * 0.67,
+              height: posterHeight,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: posterHeight * 0.67,
+                  height: posterHeight,
+                  color: Colors.grey[800],
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: Colors.white54,
+                    size: 32,
+                  ),
+                );
+              },
             ),
           ),
-        ],
+        ),
       ),
     );
   }

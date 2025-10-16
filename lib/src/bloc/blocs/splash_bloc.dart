@@ -17,7 +17,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
       emit(SplashLoading());
       movieBloc.add(const LoadAllMovies());
       // Esperar un poco para que se complete la carga
-      await Future.delayed(const Duration(seconds: 5));
+      // await Future.delayed(const Duration(seconds: 5));
       emit(SplashAuthenticated());
     });
   }

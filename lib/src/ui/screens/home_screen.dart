@@ -33,9 +33,11 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: _buildMovieSection(
+                    context,
                     state, 
                     scale, 
-                    (state) => state is MovieLoaded ? state.upcomingMovies : []
+                    (state) => state is MovieLoaded ? state.upcomingMovies : [],
+                    'upcoming'
                   ),
                 ),
             
@@ -48,19 +50,15 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: _buildMovieSection(
+                    context,
                     state, 
                     scale, 
-                    (state) => state is MovieLoaded ? state.popularMovies : []
+                    (state) => state is MovieLoaded ? state.popularMovies : [],
+                    'popular'
                   ),
                 ),
             
                 // Recomendados
-                // SliverToBoxAdapter(
-                //   child: Padding(
-                //     padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                //     child: SectionTitle(text: 'Recomendados para ti'),
-                //   ),
-                // ),
                 SliverToBoxAdapter( child: const CustomFilter()),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -83,6 +81,7 @@ class HomeScreen extends StatelessWidget {
                         childAspectRatio: 0.70,
                         onTap: (movie) {
                           print('Tapped on recommended: ${movie.title}');
+                          _navigateToMovieDetail(context, movie, 'recommended');
                         },
                       );
                     },
@@ -97,9 +96,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMovieSection(
+    BuildContext context,
     MovieState state, 
     double scale, 
-    List<MovieModel> Function(MovieState) getMovies
+    List<MovieModel> Function(MovieState) getMovies,
+    String section,
   ) {
     if (state is MovieLoading) {
       return SizedBox(
@@ -128,7 +129,15 @@ class HomeScreen extends StatelessWidget {
       posterHeight: 200 * scale,
       onTap: (movie) {
         print('Tapped on: ${movie.title}');
+        _navigateToMovieDetail(context, movie, section);
       },
+      section: section,
+    );
+  }
+
+  void _navigateToMovieDetail(BuildContext context, MovieModel movie, String section) {
+    context.read<NavigationBloc>().add(
+      NavigateToPage(routeName: '/movie_detail', useCustomTransition: true, arguments: {'movie': movie, 'heroTag': 'movie_${movie.id}_$section'})
     );
   }
     
@@ -160,37 +169,6 @@ class _Logo extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _FiltersBar extends StatelessWidget {
-  const _FiltersBar({required this.chips, required this.onTap});
-  final List<String> chips;
-  final void Function(String) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: chips
-          .map((c) => GestureDetector(
-                onTap: () => onTap(c),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.whiteColor.withOpacity(0.9), width: 1),
-                    borderRadius: BorderRadius.circular(999),
-                    color: Colors.white.withOpacity(0.05),
-                  ),
-                  child: Text(
-                    c,
-                    style: const TextStyle(color: AppColors.whiteColor, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ))
-          .toList(),
     );
   }
 }
