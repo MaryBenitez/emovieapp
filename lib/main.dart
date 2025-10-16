@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 void main() async {
 
+  WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle.dark.copyWith(
       statusBarColor: Colors.transparent,
@@ -35,16 +37,28 @@ void main() async {
 class MyApp extends StatelessWidget {
   final NavigationBloc navigationBloc = NavigationBloc();
   final LanguageBloc languageBloc = LanguageBloc();
-  late final ApiService apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
-
+  
   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
+    
+    final movieService = MovieService(apiService: apiService);
+    final movieBloc = MovieBloc(movieService: movieService);
+    
+    final splashBloc = SplashBloc(
+      apiService: apiService,
+      navigationBloc: navigationBloc,
+      movieBloc: movieBloc,
+    );
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<NavigationBloc>.value(value: navigationBloc),
         BlocProvider<LanguageBloc>.value(value: languageBloc),
+        BlocProvider<MovieBloc>.value(value: movieBloc),
+        BlocProvider<SplashBloc>.value(value: splashBloc),
       ],
       child: const MyAppView(),
     );
@@ -124,7 +138,7 @@ class _MyAppViewState extends State<MyAppView> with WidgetsBindingObserver {
     } else if (state is NavigationSuccess) {
       switch (state.routeName) {
         case '/home':
-          return const SplashScreen();
+          return const HomeScreen();
         default:
           return const SplashScreen();
       }
