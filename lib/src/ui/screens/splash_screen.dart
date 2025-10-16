@@ -156,19 +156,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // NEW: Responsivo — calculamos un factor de escala usando el lado más corto.
-    //      400px => 1.0; limitamos el rango para evitar exageraciones en tablets.
-    final shortest = MediaQuery.sizeOf(context).shortestSide; // NEW
-    final scale = (shortest / 400.0).clamp(0.7, 1.6);         // NEW
+    // Responsivo — calculamos un factor de escala usando el lado más corto.
+    // 400px => 1.0; limitamos el rango para evitar exageraciones en tablets.
+    final shortest = MediaQuery.sizeOf(context).shortestSide; 
+    final scale = (shortest / 400.0).clamp(0.7, 1.6);         
 
-    // NEW: Derivamos tamaños en función de 'scale' para texto y sombras.
-    final titleFontSize = (60.0 * scale).clamp(36.0, 96.0);   // NEW
-    final blur1 = 15.0 * scale;                                // NEW
-    final blur2 = 25.0 * scale;                                // NEW
+    // Derivamos tamaños en función de 'scale' para texto y sombras.
+    final titleFontSize = (60.0 * scale).clamp(36.0, 96.0);   
+    final blur1 = 15.0 * scale;                               
+    final blur2 = 25.0 * scale;                               
 
-    // NEW: Área central a despejar de íconos (estimada en función del tamaño del título).
-    final textAreaWidth = titleFontSize * 5.2;   // NEW
-    final textAreaHeight = titleFontSize * 1.6;  // NEW
+    // Área central a despejar de íconos (estimada en función del tamaño del título).
+    final textAreaWidth = titleFontSize * 5.2;  
+    final textAreaHeight = titleFontSize * 1.6;
 
     return Scaffold(
       body: Container(
@@ -193,7 +193,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     painter: IconPainter(
                       particles: particles,
                       animationValue: _particleController.value,
-                      // NEW: pasamos factor de escala y área a excluir para que el painter sea responsivo
                       sizeFactor: scale, 
                       excludeCenterWidth: textAreaWidth,
                       excludeCenterHeight: textAreaHeight,
@@ -216,18 +215,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         'eMovie',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: titleFontSize, // NEW: antes fijo en 60
+                          fontSize: titleFontSize, 
                           fontWeight: FontWeight.bold,
                           letterSpacing: _letterSpacing.value,
                           shadows: [
                             Shadow(
                               color: Colors.white.withOpacity(_glowAnimation.value * 0.5),
-                              blurRadius: blur1, // NEW: antes 15
+                              blurRadius: blur1,
                               offset: const Offset(0, 0),
                             ),
                             Shadow(
                               color: AppColors.secondColor.withOpacity(_glowAnimation.value * 0.3),
-                              blurRadius: blur2, // NEW: antes 25
+                              blurRadius: blur2,
                               offset: const Offset(0, 0),
                             ),
                           ],

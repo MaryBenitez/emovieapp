@@ -74,4 +74,61 @@ class MovieService {
     }
   }
 
+  // Recomendaciones
+  Future<List<MovieModel>> getTrendingForRecommendations({
+    String? language = 'es-ES', // Filtro de idioma por defecto
+    int? year, // Filtro de año
+    String period = 'day', // Filtro de período (day/week)
+  }) async {
+    try {
+      // Asignar el año actual si year es null
+      year ??= DateTime.now().year;
+
+      // Validar período
+      if (period != 'day' && period != 'week') {
+        period = 'day'; // Default a week si es inválido
+      }
+
+      // Construir query parameters
+      final queryParams = API.trendingQuery(
+        language: language,
+        year: year,
+      );
+      
+      final response = await _apiService.get(
+        API.trending(period),
+        queryParameters: queryParams
+      );
+      
+      final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+      final modelResponse = GeneralModel<List<dynamic>>.fromMap(responseMap);
+      
+      if (modelResponse.success == false && modelResponse.results == null) {
+        showToastMessage(
+          message: modelResponse.statusMessage ?? 'Error cargando recomendaciones', 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return [];
+      }
+
+      final List<dynamic> resultsData = modelResponse.results ?? [];
+      final List<MovieModel> trendingMovies = resultsData
+          .map((movieJson) => MovieModel.fromMap(movieJson as Map<String, dynamic>))
+          .toList();
+
+      // LIMITAR A 6 PELÍCULAS
+      return trendingMovies.take(6).toList();
+      
+    } catch (e) {
+      debugPrint('getTrendingForRecommendations Error :: $e');
+      showToastMessage(
+        message: 'Error fetching trending recommendations: $e', 
+        backgroundColor: AppColors.redColor, 
+        textColor: AppColors.whiteColor
+      );
+      return [];
+    }
+  }
+
 }

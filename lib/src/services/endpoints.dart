@@ -9,7 +9,8 @@ class API {
 
   static String upcoming() => '/movie/upcoming';
   static String popular() => '/movie/popular';
-  static String recommendations(int movieId) => '/movie/$movieId/recommendations';
+  static String trending(String period) => '/trending/movie/$period';
+  static String primaryTranslations() => '/configuration/primary_translations';
 
   // Parámetros comunes
   static Map<String, dynamic> defaultQuery({
@@ -21,6 +22,17 @@ class API {
       if (page > 1) 'page': '$page',
       if (language != null) 'language': language,
       if (region != null) 'region': region,
+    };
+  }
+
+  // Parámetros de filtro para trending
+  static Map<String, dynamic> trendingQuery({
+    String? language, // 'es-ES', 'en-US'
+    int? year,
+  }) {
+    return {
+      if (language != null) 'language': language,
+      if (year != null) 'primary_release_year': year.toString(),
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:emovieapp/src/imports/imports.dart';
 
 typedef GridTap<T> = void Function(T item);
 
@@ -25,8 +26,21 @@ class RecommendedGrid<T> extends StatelessWidget {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final item = items[index];
-          final imageUrl = (item as dynamic).imageUrl as String;
-          final title = (item as dynamic).title as String;
+          
+          // Adaptar para MovieModel
+          String imageUrl;
+          String title;
+          
+          if (item is MovieModel) {
+            imageUrl = item.posterPath != null 
+                ? API.poster(item.posterPath!, size: 'w342')
+                : '';
+            title = item.title ?? 'Sin título';
+          } else {
+            // Fallback para MockMovie
+            imageUrl = (item as dynamic).imageUrl as String;
+            title = (item as dynamic).title as String;
+          }
 
           return GestureDetector(
             onTap: () => onTap(item),
@@ -35,12 +49,25 @@ class RecommendedGrid<T> extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (c, w, p) => p == null ? w : Container(color: Colors.white10),
-                    errorBuilder: (_, __, ___) => Container(color: Colors.white10),
-                  ),
+                  imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (c, w, p) {
+                            if (p == null) return w;
+                            return Container(
+                              color: AppColors.primaryColor,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.secondColor,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (_, __, ___) => _buildErrorPlaceholder(),
+                        )
+                      : _buildErrorPlaceholder(),
                   const DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -50,33 +77,42 @@ class RecommendedGrid<T> extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 10,
-                    right: 10,
-                    bottom: 8,
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
           );
         },
-        childCount: items.length.clamp(0, 6), // máximo 6 como pide la prueba
+        childCount: items.length.clamp(0, 6), // Máximo 6 como pide la prueba
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
         childAspectRatio: childAspectRatio,
+      ),
+    );
+  }
+
+  Widget _buildErrorPlaceholder() {
+    return Container(
+      color: AppColors.secondColor.withOpacity(0.2),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.movie,
+            color: AppColors.whiteColor.withOpacity(0.5),
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Sin imagen',
+            style: TextStyle(
+              color: AppColors.whiteColor.withOpacity(0.5),
+              fontSize: 8,
+            ),
+          ),
+        ],
       ),
     );
   }

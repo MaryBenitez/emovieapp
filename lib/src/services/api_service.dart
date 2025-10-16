@@ -64,14 +64,12 @@ class ApiService {
       _currentLanguage = deviceLang;
       await _prefs.setString('languageCode', deviceLang);
     }
-    debugPrint("Idioma actual ApiService: $_currentLanguage");
   }
 
   void _listenLanguageChanges() {
     languageSubscription = languageBloc.stream.listen((state) {
       if (state is LanguageState) {
         _currentLanguage = state.locale.languageCode;
-        debugPrint('🌍 Idioma actualizado: $_currentLanguage');
       }
     });
   }

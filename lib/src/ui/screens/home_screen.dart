@@ -55,29 +55,37 @@ class HomeScreen extends StatelessWidget {
                 ),
             
                 // Recomendados
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                    child: SectionTitle(text: 'Recomendados para ti'),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _FiltersBar(
-                      // TODO: conectar con estado/BLoC cuando haya API
-                      chips: const ['En español', 'Lanzadas en 1993'],
-                      onTap: (label) {},
-                    ),
-                  ),
-                ),
+                // SliverToBoxAdapter(
+                //   child: Padding(
+                //     padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                //     child: SectionTitle(text: 'Recomendados para ti'),
+                //   ),
+                // ),
+                SliverToBoxAdapter( child: const CustomFilter()),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  sliver: RecommendedGrid(
-                    items: _mockRecommended, // TODO
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.70, // cards altas tipo póster
-                    onTap: (m) {/* TODO */},
+                  sliver: BlocBuilder<MovieBloc, MovieState>(
+                    builder: (context, state) {
+                      if (state is MovieLoaded && state.isLoadingRecommendations) {
+                        return SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 200,
+                            child: Center(
+                              child: CircularProgressIndicator(color: AppColors.redColor),
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      return RecommendedGrid<MovieModel>(
+                        items: state is MovieLoaded ? state.recommendedMovies : [],
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.70,
+                        onTap: (movie) {
+                          print('Tapped on recommended: ${movie.title}');
+                        },
+                      );
+                    },
                   ),
                 ),
               ],
@@ -186,25 +194,3 @@ class _FiltersBar extends StatelessWidget {
     );
   }
 }
-
-/// -------------------- MOCK DATA (quitar cuando conectes el servicio) --------------------
-class MockMovie {
-  final String id;
-  final String title;
-  final String imageUrl;
-  const MockMovie(this.id, this.title, this.imageUrl);
-}
-
-const _mockTrending = <MockMovie>[
-  MockMovie('5', 'The Third Man', 'https://image.tmdb.org/t/p/w342/9HmpyZkS7jHimoMuNoMNFc13JUo.jpg'),
-  MockMovie('6', 'Braveheart', 'https://image.tmdb.org/t/p/w342/1N4Y8fNwCu6Jz1Ww2x2n6RSPdZ3.jpg'),
-  MockMovie('7', 'Amélie', 'https://image.tmdb.org/t/p/w342/wnUAcUrMRGPPZUDroLeZhSjLkuu.jpg'),
-  MockMovie('8', 'Her', 'https://image.tmdb.org/t/p/w342/eCOtqTBorMiI3n6SCFZ8WttMBIg.jpg'),
-];
-
-const _mockRecommended = <MockMovie>[
-  MockMovie('9', 'Her', 'https://image.tmdb.org/t/p/w342/eCOtqTBorMiI3n6SCFZ8WttMBIg.jpg'),
-  MockMovie('10', 'Prometheus', 'https://image.tmdb.org/t/p/w342/ng8ALjSDhUmwLl7vbPPfnNn2CSz.jpg'),
-  MockMovie('11', 'Blade Runner 2049', 'https://image.tmdb.org/t/p/w342/aMpyrCizvSgQrLHJNds0bMu3XA3.jpg'),
-  MockMovie('12', 'Mad Max: Fury Road', 'https://image.tmdb.org/t/p/w342/kqjL17yufvn9OVLyXYpvtyrFfak.jpg'),
-];

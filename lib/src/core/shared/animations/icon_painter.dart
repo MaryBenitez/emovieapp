@@ -7,15 +7,14 @@ class IconPainter extends CustomPainter {
   final List<MovieParticle> particles;
   final double animationValue;
 
-  // NEW: parámetros para responsividad y área excluida del centro
-  final double sizeFactor;           // NEW: factor de escala del viewport
-  final double excludeCenterWidth;   // NEW: ancho a despejar alrededor del título
-  final double excludeCenterHeight;  // NEW: alto a despejar alrededor del título
+  // Pparámetros para responsividad y área excluida del centro
+  final double sizeFactor;          // factor de escala del viewport
+  final double excludeCenterWidth;  // ancho a despejar alrededor del título
+  final double excludeCenterHeight; // alto a despejar alrededor del título
 
   IconPainter({
     required this.particles,
     required this.animationValue,
-    // NEW: requerimos estos datos para pintar responsivo
     required this.sizeFactor,        
     required this.excludeCenterWidth,
     required this.excludeCenterHeight,
@@ -40,7 +39,7 @@ class IconPainter extends CustomPainter {
       final x = baseX * size.width;
       final y = baseY * size.height;
 
-      // NEW: amplitud de flote escalada por sizeFactor (más pantalla ⇒ más movimiento)
+      // Aamplitud de flote escalada por sizeFactor (más pantalla ⇒ más movimiento)
       final ampX = 30.0 * sizeFactor;
       final ampY = 20.0 * sizeFactor;
       final floatX = x + math.sin(animationValue * 2 * math.pi + p.pulsePhase) * ampX;

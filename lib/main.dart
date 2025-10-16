@@ -45,7 +45,9 @@ class MyApp extends StatelessWidget {
     final apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
     
     final movieService = MovieService(apiService: apiService);
-    final movieBloc = MovieBloc(movieService: movieService);
+    final configService = ConfigService(apiService: apiService);
+    final movieBloc = MovieBloc(movieService: movieService, configService: configService);
+    final filterBloc = FilterBloc(configService: configService)..add(const LoadFilterData());
     
     final splashBloc = SplashBloc(
       apiService: apiService,
@@ -59,6 +61,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<LanguageBloc>.value(value: languageBloc),
         BlocProvider<MovieBloc>.value(value: movieBloc),
         BlocProvider<SplashBloc>.value(value: splashBloc),
+        BlocProvider<FilterBloc>.value(value: filterBloc),
       ],
       child: const MyAppView(),
     );
