@@ -143,11 +143,12 @@ Los tests viven en `test/`:
 ### Ejecutar tests
 ```bash
 flutter test
+```
 
 ### Ejecutar archivo específico
 ```bash
 flutter test test/home_screen_test.dart
-
+```
 
 ---
 
