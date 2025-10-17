@@ -55,3 +55,25 @@ void openTrailer(BuildContext context, String url) async {
   }
 }
 
+Future<void> handleRefresh(BuildContext context) async {
+    
+    // Mostrar toast
+    showToastMessage(
+      message: 'Actualizando películas...', 
+      backgroundColor: AppColors.secondColor, 
+      textColor: AppColors.whiteColor
+    );
+
+    // Recargar todas las películas
+    context.read<MovieBloc>().add(const LoadAllMovies());
+    
+    // Esperar un poco para mostrar el refresh
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    // Toast de éxito
+    showToastMessage(
+      message: '¡Películas actualizadas!', 
+      backgroundColor: AppColors.secondColor, 
+      textColor: AppColors.whiteColor
+    );
+  }
