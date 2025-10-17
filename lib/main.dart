@@ -86,6 +86,15 @@ class _MyAppViewState extends State<MyAppView> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     navigationBloc = context.read<NavigationBloc>();
+    
+    //  Disparar el evento de splash
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<SplashBloc>().add(
+          CheckAuthentication(navigationBloc: navigationBloc)
+        );
+      }
+    });
   }
 
   @override
