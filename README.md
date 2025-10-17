@@ -1,4 +1,4 @@
-# eMovieApp 🎬 — Prueba técnica Flutter
+# eMovieApp 🎬
 
 Aplicación Flutter que consume **TMDb** para mostrar:
 - **Próximos estrenos**
@@ -34,7 +34,7 @@ class Env {
 
 ## 3) Ejecutar
 
-- **VS Code → F5** (no se necesitas `--dart-define`).
+- **VS Code → F5** (no se necesita `--dart-define`).
 - O CLI:
 
 ```bash
@@ -164,7 +164,7 @@ iOS:
 flutter build ios
 ```
 
-> Si se cambias claves, se debe actualizar `env.dart` y rebuild.
+> Si se cambia claves, se debe actualizar `env.dart` y rebuild.
 
 ---
 
