@@ -1,0 +1,10 @@
+export 'package:emovieapp/src/models/general_model.dart';
+export 'package:emovieapp/src/models/res/movie_model.dart';
+export 'package:emovieapp/src/models/res/paged_movie.dart';
+export 'package:emovieapp/src/models/res/language_model.dart';
+export 'package:emovieapp/src/models/res/movie_detail_model.dart';
+export 'package:emovieapp/src/models/res/movie_gender_model.dart';
+export 'package:emovieapp/src/models/res/movie_production_company_model.dart';
+export 'package:emovieapp/src/models/res/movie_production_country_model.dart';
+export 'package:emovieapp/src/models/res/movie_spoken_language_model.dart';
+export 'package:emovieapp/src/models/video_model.dart';

@@ -6,221 +6,97 @@ import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio _dio;
-  final String baseUrl;
   late SharedPreferences _prefs;
   late String _currentLanguage;
   final LanguageBloc languageBloc;
   final NavigationBloc navigationBloc;
   late final StreamSubscription languageSubscription;
-  API api = API();
+
+  ApiService({
+    required this.navigationBloc,
+    required this.languageBloc,
+  }) : _dio = Dio(BaseOptions(
+          baseUrl: API.base, // TMDb
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 30),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        )) {
+    _initializeLanguage();
+    _listenLanguageChanges();
+
+    // Interceptor: agrega language/region y auth TMDb
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Idioma/Región por defecto
+        final lang = _mapLang(_currentLanguage);     // 'es' -> 'es-ES'
+        options.queryParameters.putIfAbsent('language', () => lang);
+        options.queryParameters.putIfAbsent('region', () => 'ES'); // ajusta a tu público
+
+        // Auth TMDb: v4 Bearer > v3 api_key
+        if (Env.tmdbV4Token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer ${Env.tmdbV4Token}';
+        } else if (Env.tmdbApiKey.isNotEmpty) {
+          options.queryParameters.putIfAbsent('api_key', () => Env.tmdbApiKey);
+        }
+
+        handler.next(options);
+      },
+      onError: (e, h) => h.next(e),
+    ));
+  }
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     await _initializeLanguage();
   }
 
-  ApiService({
-    required this.navigationBloc,
-    required this.languageBloc,
-  })
-      : baseUrl = API.baseURL,
-        _dio = Dio(BaseOptions(
-          baseUrl: API.baseURL,
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-          sendTimeout: const Duration(seconds: 30),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        )) {
-    _initializeLanguage();
-    _listenLanguageChanges();
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        if (options.path == API.refreshToken || options.path == API.signIn) {
-          // Ignora las solicitudes de renovación
-          handler.next(options);
-          return;
-        }
-
-        final token = _prefs.getString('accessToken');
-        options.headers['accept-language'] = _currentLanguage;
-        if (options.extra['isAuth'] == true && token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-      onError: (DioException error, handler) async {
-        final isLoginCall = error.requestOptions.path == API.signIn;
-        final requiresAuth = error.requestOptions.extra['isAuth'] == true;
-        if (error.response?.statusCode == 401 && requiresAuth && !isLoginCall) {
-          
-        }
-        handler.next(error);
-      },
-    ));
-  }
-
   Future<void> _initializeLanguage() async {
     _prefs = await SharedPreferences.getInstance();
-
     final savedLang = _prefs.getString('languageCode');
-
     if (savedLang != null && savedLang.isNotEmpty) {
       _currentLanguage = savedLang;
     } else {
       final deviceLang = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
       _currentLanguage = deviceLang;
-      await _prefs.setString('languageCode', deviceLang); // Guardamos por si se necesita luego
+      await _prefs.setString('languageCode', deviceLang);
     }
-
-    debugPrint("Idioma actual configurado en ApiService: $_currentLanguage");
   }
 
   void _listenLanguageChanges() {
     languageSubscription = languageBloc.stream.listen((state) {
       if (state is LanguageState) {
         _currentLanguage = state.locale.languageCode;
-        debugPrint('🌍 Idioma actualizado: $_currentLanguage');
       }
     });
   }
 
-  void dispose() {
-    languageSubscription.cancel();
+  void dispose() => languageSubscription.cancel();
+
+  String _mapLang(String code) {
+    switch (code) {
+      case 'es': return 'es-ES';
+      case 'en': return 'en-US';
+      case 'pt': return 'pt-BR';
+      default:   return 'en-US';
+    }
   }
 
+  // Métodos HTTP (dejamos solo GET para TMDb; puedes conservar post/put/patch si quieres)
   Future<dynamic> get(
-    String endpoint, {
+    String path, {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
-    bool isAuth = false,
   }) async {
     try {
       final response = await _dio.get(
-        endpoint,
+        path,
         queryParameters: queryParameters,
-        options: Options(
-          headers: {
-            ...?headers, // Combina los encabezados personalizados
-            if (isAuth) 'Authorization': 'Bearer ${_prefs.getString('accessToken')}',
-          },
-          extra: {'isAuth': isAuth},
-        ),
+        options: Options(headers: headers),
       );
-      if (response.statusCode == 401) {
-        
-      }
-      return response.data;
-    } catch (error) {
-      return _handleError(error);
-    }
-  }
-
-  Future<dynamic> post(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, dynamic>? headers,
-    bool isAuth = false,
-    bool isMultipart = false,
-  }) async {
-    try {
-      final response = await _dio.post(
-        endpoint,
-        data: isMultipart ? FormData.fromMap(data!) : data,
-        options: Options(
-          contentType: isMultipart ? 'multipart/form-data' : 'application/json',
-          headers: {
-            ...?headers, // Combina los encabezados personalizados
-            if (isAuth) 'Authorization': 'Bearer ${_prefs.getString('accessToken')}',
-          },
-          extra: {'isAuth': isAuth},
-        ),
-      );
-      if (response.statusCode == 401) {
-        
-      }
-      return response.data;
-    } catch (error) {
-      return _handleError(error);
-    }
-  }
-
-  Future<dynamic> put(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, dynamic>? headers,
-    bool isAuth = false,
-  }) async {
-    try {
-      final response = await _dio.put(
-        endpoint,
-        data: data,
-        options: Options(
-          headers: {
-            ...?headers, // Combina los encabezados personalizados
-            if (isAuth) 'Authorization': 'Bearer ${_prefs.getString('accessToken')}',
-          },
-          extra: {'isAuth': isAuth},
-        ),
-      );
-      if (response.statusCode == 401) {
-        
-      }
-      return response.data;
-    } catch (error) {
-      return _handleError(error);
-    }
-  }
-
-  Future<dynamic> delete(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, dynamic>? headers,
-    bool isAuth = false,
-  }) async {
-    try {
-      final response = await _dio.delete(
-        endpoint,
-        data: data,
-        options: Options(
-          headers: {
-            ...?headers, // Combina los encabezados personalizados
-            if (isAuth) 'Authorization': 'Bearer ${_prefs.getString('accessToken')}',
-          },
-          extra: {'isAuth': isAuth},
-        ),
-      );
-      if (response.statusCode == 401) {
-        
-      }
-      return response.data;
-    } catch (error) {
-      return _handleError(error);
-    }
-  }
-
-  Future<dynamic> patch(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, dynamic>? headers,
-    bool isAuth = false,
-  }) async {
-    try {
-      final response = await _dio.patch(
-        endpoint,
-        data: data,
-        options: Options(
-          headers: {
-            ...?headers,
-            if (isAuth) 'Authorization': 'Bearer ${_prefs.getString('accessToken')}',
-          },
-          extra: {'isAuth': isAuth},
-        ),
-      );
-      if (response.statusCode == 401) {
-        
-      }
       return response.data;
     } catch (error) {
       return _handleError(error);
@@ -229,9 +105,8 @@ class ApiService {
 
   Map<String, dynamic> _handleError(dynamic error) {
     if (error is DioException) {
-      int statusCode = error.response?.statusCode ?? 500;
+      final status = error.response?.statusCode ?? 500;
       String message;
-
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.sendTimeout:
@@ -239,36 +114,21 @@ class ApiService {
           message = "Tiempo de conexión agotado";
           navigateToErrorScreen(message, navigationBloc);
           break;
-
         case DioExceptionType.badResponse:
-          final rawMessage = error.response?.data['message'];
-          if (rawMessage is String) {
-            message = rawMessage;
-          } else if (rawMessage is List) {
-            message = rawMessage.join(', ');
-          } else {
-            message = "Error desconocido con código $statusCode";
-          }
+          final raw = error.response?.data;
+          message = raw is Map && raw['status_message'] != null
+              ? raw['status_message']
+              : "Error con código $status";
           break;
-
         case DioExceptionType.cancel:
           message = "Solicitud cancelada";
           break;
-
         case DioExceptionType.unknown:
         default:
           message = "Error inesperado: ${error.message}";
       }
-
-      return {
-        'statusCode': statusCode,
-        'message': message,
-      };
-    } else {
-      return {
-        'statusCode': 500,
-        'message': "Error inesperado: $error",
-      };
+      return {'statusCode': status, 'message': message};
     }
+    return {'statusCode': 500, 'message': "Error inesperado: $error"};
   }
 }

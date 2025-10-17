@@ -19,12 +19,12 @@ class SimpleBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
-    debugPrint('bloc: $bloc, change: $change');
+    // debugPrint('bloc: $bloc, change: $change');
   }
 
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
-    debugPrint('bloc: $bloc, transition: $transition');
+    // debugPrint('bloc: $bloc, transition: $transition');
   }
 }

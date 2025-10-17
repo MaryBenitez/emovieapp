@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 void main() async {
 
+  WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle.dark.copyWith(
       statusBarColor: Colors.transparent,
@@ -35,16 +37,32 @@ void main() async {
 class MyApp extends StatelessWidget {
   final NavigationBloc navigationBloc = NavigationBloc();
   final LanguageBloc languageBloc = LanguageBloc();
-  late final ApiService apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
-
+  
   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
+    
+    final cacheService = CacheService();
+    final movieService = MovieService(apiService: apiService, cache: cacheService);
+    final configService = ConfigService(apiService: apiService, cache: cacheService);
+    final movieBloc = MovieBloc(movieService: movieService, configService: configService);
+    final filterBloc = FilterBloc(configService: configService)..add(const LoadFilterData());
+    
+    final splashBloc = SplashBloc(
+      apiService: apiService,
+      navigationBloc: navigationBloc,
+      movieBloc: movieBloc,
+    );
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<NavigationBloc>.value(value: navigationBloc),
         BlocProvider<LanguageBloc>.value(value: languageBloc),
+        BlocProvider<MovieBloc>.value(value: movieBloc),
+        BlocProvider<SplashBloc>.value(value: splashBloc),
+        BlocProvider<FilterBloc>.value(value: filterBloc),
       ],
       child: const MyAppView(),
     );
@@ -105,7 +123,79 @@ class _MyAppViewState extends State<MyAppView> with WidgetsBindingObserver {
                     localizationsDelegates: context.localizationDelegates,
                     home: BlocBuilder<NavigationBloc, NavigationState>(
                       builder: (context, navState) {
-                        return _buildPage(navState);
+                        if (navState is NavigationInitial || navState is SplashUnauthenticated) {
+                          return const SplashScreen();
+                        }
+                        
+                        return BlocListener<NavigationBloc, NavigationState>(
+                          listener: (context, state) {
+                            if (state is NavigationSuccess) {
+                              switch (state.routeName) {
+                                case '/home':
+                                  // No hacer nada, ya está en home
+                                  break;
+                                case '/movie_detail':
+                                  final MovieModel? movie = state.arguments?['movie'];
+                                  final String? heroTag = state.arguments?['heroTag'];
+                                  
+                                  if (movie != null && heroTag != null) {
+                                    Navigator.of(context).push(
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation, secondaryAnimation) {
+                                          return MovieDetailScreen(movie: movie, heroTag: heroTag);
+                                        },
+                                        transitionDuration: const Duration(milliseconds: 600),
+                                        reverseTransitionDuration: const Duration(milliseconds: 400),
+                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                          var scaleAnimation = Tween<double>(
+                                            begin: 0.8,
+                                            end: 1.0,
+                                          ).animate(CurvedAnimation(
+                                            parent: animation,
+                                            curve: Curves.easeOutCubic,
+                                          ));
+                                          
+                                          var fadeAnimation = Tween<double>(
+                                            begin: 0.0,
+                                            end: 1.0,
+                                          ).animate(CurvedAnimation(
+                                            parent: animation,
+                                            curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+                                          ));
+
+                                          return FadeTransition(
+                                            opacity: fadeAnimation,
+                                            child: ScaleTransition(
+                                              scale: scaleAnimation,
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ).then((_) {
+                                      // Resetear el estado después de regresar
+                                      context.read<NavigationBloc>().add(
+                                        const NavigateToPage(routeName: '/home')
+                                      );
+                                    });
+                                  }
+                                  break;
+                              }
+                            }
+                          },
+                          child: PopScope(
+                            canPop: false,
+                            onPopInvoked: (didPop) async {
+                              if (!didPop) {
+                                final shouldExit = await showExitDialog(context);
+                                if (shouldExit) {
+                                  SystemNavigator.pop();
+                                }
+                              }
+                            },
+                            child: const HomeScreen(),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -116,19 +206,5 @@ class _MyAppViewState extends State<MyAppView> with WidgetsBindingObserver {
         },
       ),
     );
-  }
-
-  Widget _buildPage(NavigationState state) {
-    if (state is NavigationInitial || state is SplashUnauthenticated) {
-      return const SplashScreen();
-    } else if (state is NavigationSuccess) {
-      switch (state.routeName) {
-        case '/home':
-          return const SplashScreen();
-        default:
-          return const SplashScreen();
-      }
-    }
-    return const SplashScreen();
   }
 }

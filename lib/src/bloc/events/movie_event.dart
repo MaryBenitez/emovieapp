@@ -1,0 +1,51 @@
+part of '../blocs/movie_bloc.dart';
+
+abstract class MovieEvent extends Equatable {
+  const MovieEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+// Cargar todo
+class LoadAllMovies extends MovieEvent {
+  const LoadAllMovies();
+}
+
+class LoadRecommendationsWithFilter extends MovieEvent {
+  final String? language;
+  final int? year;
+  final String? period; 
+
+  const LoadRecommendationsWithFilter({this.language, this.year, this.period});
+
+  @override
+  List<Object> get props => [language ?? '', year ?? 0, period ?? ''];
+}
+
+class UpdatePeriodFilter extends FilterEvent {
+  final String period;
+
+  const UpdatePeriodFilter({required this.period});
+
+  @override
+  List<Object> get props => [period];
+}
+
+class LoadMovieDetail extends MovieEvent {
+  final int movieId;
+
+  const LoadMovieDetail({required this.movieId});
+
+  @override
+  List<Object> get props => [movieId];
+}
+
+class LoadMovieVideos extends MovieEvent {
+  final int movieId;
+
+  const LoadMovieVideos({required this.movieId});
+
+  @override
+  List<Object> get props => [movieId];
+}
