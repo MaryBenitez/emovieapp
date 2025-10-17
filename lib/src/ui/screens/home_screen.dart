@@ -79,8 +79,8 @@ class HomeScreen extends StatelessWidget {
                         items: state is MovieLoaded ? state.recommendedMovies : [],
                         crossAxisCount: 2,
                         childAspectRatio: 0.70,
+                        section: 'recommended',
                         onTap: (movie) {
-                          print('Tapped on recommended: ${movie.title}');
                           _navigateToMovieDetail(context, movie, 'recommended');
                         },
                       );
@@ -128,7 +128,6 @@ class HomeScreen extends StatelessWidget {
       items: movies,
       posterHeight: 200 * scale,
       onTap: (movie) {
-        print('Tapped on: ${movie.title}');
         _navigateToMovieDetail(context, movie, section);
       },
       section: section,

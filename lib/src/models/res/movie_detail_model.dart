@@ -25,6 +25,7 @@ class MovieDetailModel {
   final bool? video;
   final double? voteAverage;
   final int? voteCount;
+  final List<VideoModel>? videos; 
 
   const MovieDetailModel({
     this.adult,
@@ -51,6 +52,7 @@ class MovieDetailModel {
     this.video,
     this.voteAverage,
     this.voteCount,
+    this.videos, 
   });
 
   static double? _asDouble(dynamic v) {
@@ -94,6 +96,7 @@ class MovieDetailModel {
       video: json['video'] as bool?,
       voteAverage: _asDouble(json['vote_average']),
       voteCount: _asInt(json['vote_count']),
+      videos: (json['videos']?['results'] as List?)?.map((v) => VideoModel.fromJson(v)).toList(),
     );
   }
 

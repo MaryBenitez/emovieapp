@@ -63,14 +63,56 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
       }
     });
 
+    // Cargar detalle
     on<LoadMovieDetail>((event, emit) async {
-      emit(MovieLoading());
       try {
-        final movieDetail = await _movieService.getMoviesDetails(idMovie: event.movieId);
-        if (movieDetail != null) {
-          emit(MovieDetailLoaded(movieDetail: movieDetail));
+        final currentState = state;
+        
+        if (currentState is MovieLoaded) {
+          // NO EMITIR MovieLoading, mantener el estado actual
+          final movieDetail = await _movieService.getMoviesDetails(idMovie: event.movieId);
+          if (movieDetail != null) {
+            // MANTENER LOS VIDEOS EXISTENTES
+            emit(currentState.copyWith(
+              currentMovieDetail: movieDetail,
+              // NO TOCAR currentVideos si ya existe
+            ));
+          }
         } else {
-          emit(const MovieDetailError(message: 'No se pudo cargar el detalle de la película'));
+          // Si no hay estado previo, cargar normalmente
+          emit(MovieLoading());
+          final movieDetail = await _movieService.getMoviesDetails(idMovie: event.movieId);
+          if (movieDetail != null) {
+            emit(MovieDetailLoaded(movieDetail: movieDetail));
+          } else {
+            emit(const MovieDetailError(message: 'No se pudo cargar el detalle de la película'));
+          }
+        }
+      } catch (e) {
+        emit(MovieDetailError(message: e.toString()));
+      }
+    });
+
+    // Carga videos
+    on<LoadMovieVideos>((event, emit) async {
+      try {
+        final currentState = state;
+        final videosResponse = await _movieService.getMovieVideos(movieId: event.movieId);
+        
+        if (videosResponse != null) {
+          if (currentState is MovieLoaded) {
+            // Mantener el estado MovieLoaded con videos
+            emit(currentState.copyWith(currentVideos: videosResponse));
+          } else if (currentState is MovieDetailLoaded) {
+            // CREAR NUEVO ESTADO QUE COMBINE DETALLE + VIDEOS
+            emit(MovieDetailWithVideosLoaded(
+              movieDetail: currentState.movieDetail,
+              videosResponse: videosResponse,
+            ));
+          } else {
+            // Solo videos
+            emit(MovieVideosLoaded(videosResponse: videosResponse));
+          }
         }
       } catch (e) {
         emit(MovieDetailError(message: e.toString()));

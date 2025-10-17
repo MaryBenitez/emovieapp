@@ -1,5 +1,4 @@
 import 'package:emovieapp/src/imports/imports.dart';
-import 'package:flutter/material.dart';
 
 class ConfigService {
   final ApiService _apiService;
@@ -30,7 +29,6 @@ class ConfigService {
       return listLanguages;
       
     } catch (e) {
-      debugPrint('getPrimaryLanguages Error :: $e');
       showToastMessage(
         message: 'Error fetching languages: $e', 
         backgroundColor: AppColors.redColor, 

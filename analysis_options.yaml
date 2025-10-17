@@ -12,6 +12,9 @@ analyzer:
     use_build_context_synchronously: ignore
     deprecated_member_use: ignore
     unused_local_variable: ignore
+    avoid_init_to_null: ignore
+    unused_field: ignore
+    unnecessary_null_comparison: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:

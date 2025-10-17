@@ -7,3 +7,4 @@ export 'package:emovieapp/src/models/res/movie_gender_model.dart';
 export 'package:emovieapp/src/models/res/movie_production_company_model.dart';
 export 'package:emovieapp/src/models/res/movie_production_country_model.dart';
 export 'package:emovieapp/src/models/res/movie_spoken_language_model.dart';
+export 'package:emovieapp/src/models/video_model.dart';

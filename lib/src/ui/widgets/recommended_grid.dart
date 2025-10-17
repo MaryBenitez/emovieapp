@@ -10,12 +10,14 @@ class RecommendedGrid<T> extends StatelessWidget {
     required this.onTap,
     this.crossAxisCount = 2,
     this.childAspectRatio = 0.7,
+    this.section = 'recommended'
   });
 
   final List<T> items;
   final GridTap<T> onTap;
   final int crossAxisCount;
   final double childAspectRatio;
+  final String section;
 
   @override
   Widget build(BuildContext context) {
@@ -30,59 +32,65 @@ class RecommendedGrid<T> extends StatelessWidget {
           // Adaptar para MovieModel
           String imageUrl;
           String title;
+          dynamic itemId;
           
           if (item is MovieModel) {
             imageUrl = item.posterPath != null 
                 ? API.poster(item.posterPath!, size: 'w342')
                 : '';
             title = item.title ?? 'Sin título';
+            itemId = item.id; // OBTENER ID
           } else {
             // Fallback para MockMovie
             imageUrl = (item as dynamic).imageUrl as String;
             title = (item as dynamic).title as String;
+            itemId = (item as dynamic).id; // OBTENER ID
           }
 
           return GestureDetector(
             onTap: () => onTap(item),
-            child: ClipRRect(
-              borderRadius: radius,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  imageUrl.isNotEmpty
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (c, w, p) {
-                            if (p == null) return w;
-                            return Container(
-                              color: AppColors.primaryColor,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.secondColor,
-                                  strokeWidth: 2,
+            child: Hero(
+              tag: 'movie_${itemId}_$section',
+              child: ClipRRect(
+                borderRadius: radius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (c, w, p) {
+                              if (p == null) return w;
+                              return Container(
+                                color: AppColors.primaryColor,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.secondColor,
+                                    strokeWidth: 2,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (_, __, ___) => _buildErrorPlaceholder(),
-                        )
-                      : _buildErrorPlaceholder(),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment(0, 0.6),
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black54],
+                              );
+                            },
+                            errorBuilder: (_, __, ___) => _buildErrorPlaceholder(),
+                          )
+                        : _buildErrorPlaceholder(),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment(0, 0.6),
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black54],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
         },
-        childCount: items.length.clamp(0, 6), // Máximo 6 como pide la prueba
+        childCount: items.length.clamp(0, 6),
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,

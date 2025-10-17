@@ -12,6 +12,7 @@ class API {
   static String trending(String period) => '/trending/movie/$period';
   static String primaryTranslations() => '/configuration/primary_translations';
   static String detailsMovie(int idMovie) => '/movie/$idMovie';
+  static String videoMovie(int idMovie) => '/movie/$idMovie/videos';
 
   // Parámetros comunes
   static Map<String, dynamic> defaultQuery({

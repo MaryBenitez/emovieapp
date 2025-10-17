@@ -40,3 +40,12 @@ class LoadMovieDetail extends MovieEvent {
   @override
   List<Object> get props => [movieId];
 }
+
+class LoadMovieVideos extends MovieEvent {
+  final int movieId;
+
+  const LoadMovieVideos({required this.movieId});
+
+  @override
+  List<Object> get props => [movieId];
+}

@@ -7,7 +7,6 @@ void saveLastRoute(String route) async {
 }
 
 void navigateToErrorScreen(String message, NavigationBloc navigationBloc) {
-  debugPrint("🚨 Error - Navegando a pantalla de error: $message");
   navigationBloc.add(
     NavigateToPage(
       routeName: '/errorScreen',
@@ -38,3 +37,21 @@ void showToastMessage({
     fontSize: 14.0,
   );
 }
+
+void openTrailer(BuildContext context, String url) async {
+  try {
+    final Uri uri = Uri.parse(url);
+    
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      showNoTrailerDialog(context);
+    }
+  } catch (e) {
+    showNoTrailerDialog(context);
+  }
+}
+

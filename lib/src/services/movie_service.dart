@@ -1,5 +1,4 @@
 import 'package:emovieapp/src/imports/imports.dart';
-import 'package:flutter/material.dart';
 
 class MovieService {
   final ApiService _apiService;
@@ -33,7 +32,6 @@ class MovieService {
 
       return listMoviesUpcoming;
     } catch (e) {
-      debugPrint('getUpcoming Error :: $e');
       showToastMessage(
         message: 'Error fetching getMoviesUpcoming: $e', 
         backgroundColor: AppColors.redColor, 
@@ -65,7 +63,6 @@ class MovieService {
 
       return listMoviesPopular;
     } catch (e) {
-      debugPrint('getMoviesPopular Error :: $e');
       showToastMessage(
         message: 'Error fetching getMoviesPopular: $e', 
         backgroundColor: AppColors.redColor, 
@@ -122,7 +119,6 @@ class MovieService {
       return trendingMovies.take(6).toList();
       
     } catch (e) {
-      debugPrint('getTrendingForRecommendations Error :: $e');
       showToastMessage(
         message: 'Error fetching getTrendingForRecommendations: $e', 
         backgroundColor: AppColors.redColor, 
@@ -175,9 +171,48 @@ class MovieService {
       return movieDetail;
       
     } catch (e) {
-      debugPrint('getMoviesDetails Error :: $e');
       showToastMessage(
         message: 'Error fetching getMoviesDetails: ${e.toString()}', 
+        backgroundColor: AppColors.redColor, 
+        textColor: AppColors.whiteColor
+      );
+      return null;
+    }
+  }
+
+  Future<VideosResponse?> getMovieVideos({required int movieId}) async {
+    try {
+      final response = await _apiService.get(API.videoMovie(movieId));
+
+      if (response == null) {
+        showToastMessage(
+          message: 'No se recibió respuesta del servidor', 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return null;
+      }
+      
+      final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+      
+      // Validar si hay errores en la respuesta
+      if (responseMap.containsKey('success') && responseMap['success'] == false) {
+        final errorMessage = responseMap['status_message'] ?? 'Error desconocido';
+        showToastMessage(
+          message: errorMessage, 
+          backgroundColor: AppColors.redColor, 
+          textColor: AppColors.whiteColor
+        );
+        return null;
+      }
+
+      // Crear el modelo directamente desde el responseMap
+      final movieVideo = VideosResponse.fromJson(responseMap);
+      
+      return movieVideo;
+    } catch (e) {
+      showToastMessage(
+        message: 'Error cargando videos: ${e.toString()}', 
         backgroundColor: AppColors.redColor, 
         textColor: AppColors.whiteColor
       );
