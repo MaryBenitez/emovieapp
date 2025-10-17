@@ -7,3 +7,4 @@ export 'package:easy_localization/easy_localization.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:video_player/video_player.dart';
+export 'package:connectivity_plus/connectivity_plus.dart';

@@ -535,6 +535,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
     return BlocBuilder<MovieBloc, MovieState>(
       builder: (context, state) {
         List<String> genres = [];
+        bool isLoadingDetail = false;
       
         // BUSCAR GÉNEROS EN TODOS LOS ESTADOS POSIBLES
         if (state is MovieLoaded && state.currentMovieDetail != null) {
@@ -543,7 +544,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
           genres = state.movieDetail.genreNames;
         } else if (state is MovieDetailWithVideosLoaded) {
           genres = state.movieDetail.genreNames;
-        } else {}
+        } else if (state is MovieLoading) {
+          isLoadingDetail = true;
+        }
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -634,7 +637,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
 
             const SizedBox(height: 15),
             // GÉNEROS
-            _buildGenres(genres),
+            _buildGenresWithLoading(genres, isLoadingDetail),
             const SizedBox(height: 15),
             Tooltip(
               message: "Desliza hacia arriba",
@@ -652,6 +655,46 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
         );
       },
     );
+  }
+
+  Widget _buildGenresWithLoading(List<String> genres, bool isLoading) {
+    if (isLoading) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.whiteColor.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Cargando géneros...',
+            style: TextStyle(
+              color: AppColors.whiteColor.withOpacity(0.7),
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      );
+    }
+    
+    if (genres.isEmpty) {
+      return Text(
+        'Géneros no disponibles',
+        style: TextStyle(
+          color: AppColors.whiteColor.withOpacity(0.5),
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+    }
+    
+    return _buildGenres(genres);
   }
 
   Widget _buildGenres(List<String> genres) {

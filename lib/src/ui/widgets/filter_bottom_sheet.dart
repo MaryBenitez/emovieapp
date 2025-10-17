@@ -451,7 +451,7 @@ class FilterBottomSheet extends StatelessWidget {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ],

@@ -3,3 +3,4 @@ export 'package:emovieapp/src/services/api_service.dart';
 
 export 'package:emovieapp/src/services/movie_service.dart';
 export 'package:emovieapp/src/services/config_service.dart';
+export 'package:emovieapp/src/services/connectivity_service.dart';

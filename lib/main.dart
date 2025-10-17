@@ -44,8 +44,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final apiService = ApiService(navigationBloc: navigationBloc, languageBloc: languageBloc);
     
-    final movieService = MovieService(apiService: apiService);
-    final configService = ConfigService(apiService: apiService);
+    final cacheService = CacheService();
+    final movieService = MovieService(apiService: apiService, cache: cacheService);
+    final configService = ConfigService(apiService: apiService, cache: cacheService);
     final movieBloc = MovieBloc(movieService: movieService, configService: configService);
     final filterBloc = FilterBloc(configService: configService)..add(const LoadFilterData());
     
