@@ -51,7 +51,7 @@ class CustomFilter extends StatelessWidget {
                 color: AppColors.redColor.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.redColor.withOpacity(0.5),
+                  color: AppColors.whiteColor,
                   width: 2,
                 ),
               ),
